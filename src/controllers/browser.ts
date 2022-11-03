@@ -313,7 +313,8 @@ export async function initBrowser(
   if (options.browserWS && options.browserWS != '') {
     await puppeteer
       .connect({
-        browserWSEndpoint: options.browserWS
+        browserWSEndpoint: options.browserWS,
+        defaultViewport: null
       })
       .then((e) => {
         browser = e;
@@ -329,6 +330,7 @@ export async function initBrowser(
       .launch({
         headless: options.headless,
         devtools: options.devtools,
+        defaultViewport: null,
         args:
           Array.isArray(options.browserArgs) && options.browserArgs.length
             ? options.browserArgs
@@ -352,9 +354,14 @@ export async function initBrowser(
 export async function getWhatsappPage(
   browser: Browser | BrowserContext
 ): Promise<Page> {
-  const pages = await browser.pages().catch();
+  const pages = await browser.pages().catch() as Page[];
 
   if (pages.length) {
+    const whatsappPage = pages.find(page => {
+      return page.url() === 'https://web.whatsapp.com/';
+    });
+
+    if (whatsappPage) return whatsappPage;
     return pages[0];
   }
 
